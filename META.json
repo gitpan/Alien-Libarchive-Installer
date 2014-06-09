@@ -1,0 +1,52 @@
+{
+   "abstract" : "Installer for libarchive",
+   "author" : [
+      "Graham Ollis <plicease@cpan.org>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Dist::Zilla version 5.019, CPAN::Meta::Converter version 2.141170",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "Alien-Libarchive-Installer",
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "Module::Build" : "0.3601"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "Module::Build" : "0.3601"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "perl" : "5.006"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::More" : "0"
+         }
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/plicease/alien-libarchive-installer/issues"
+      },
+      "homepage" : "http://perl.wdlabs.com/Alien-Libarchive-Installer/",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/plicease/alien-libarchive-installer.git",
+         "web" : "https://github.com/plicease/alien-libarchive-installer"
+      }
+   },
+   "version" : "0.01"
+}
+
