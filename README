@@ -4,7 +4,7 @@ NAME
 
 VERSION
 
-    version 0.01
+    version 0.02
 
 SYNOPSIS
 
@@ -162,6 +162,11 @@ CLASS METHODS
       both
 
 	use both test_compile_run and test_ffi to verify
+
+    alien
+
+      If true (the default) then an existing Alien::Libarchive will be used
+      if version 0.19 or better is found. Usually this is what you want.
 
  build_install
 

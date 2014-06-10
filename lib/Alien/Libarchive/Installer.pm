@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Installer for libarchive
-our $VERSION = '0.01'; # VERSION
+our $VERSION = '0.02'; # VERSION
 
 
 sub versions_available
@@ -98,11 +98,12 @@ sub system_install
 {
   my($class, %options) = @_;
 
+  $options{alien} = 1 unless defined $options{alien};
   $options{test} ||= 'compile';
   die "test must be one of compile, ffi or both"
     unless $options{test} =~ /^(compile|ffi|both)$/;
 
-  if(eval q{ use Alien::Libarchive 0.19; 1 })
+  if($options{alien} && eval q{ use Alien::Libarchive 0.19; 1 })
   {
     my $alien = Alien::Libarchive->new;
     my $build = bless {
@@ -248,11 +249,18 @@ sub build_install
         closedir $dh;
         foreach my $basename (@list)
         {
-          require File::Copy;
-          File::Copy::move(
-            File::Spec->catfile($static_dir, $basename),
-            File::Spec->catfile($dll_dir,    $basename),
-          );
+          my $from = File::Spec->catfile($static_dir, $basename);
+          my $to   = File::Spec->catfile($dll_dir,    $basename);
+          if(-l $from)
+          {
+            symlink(readlink $from, $to);
+            unlink($from);
+          }
+          else
+          {
+            require File::Copy;
+            File::Copy::move($from, $to);
+          }
         }
       };
     }
@@ -516,7 +524,7 @@ Alien::Libarchive::Installer - Installer for libarchive
 
 =head1 VERSION
 
-version 0.01
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -694,6 +702,12 @@ L<test_ffi|Alien::Libarchive::Installer#test_ffi>
 to verify
 
 =back
+
+=item alien
+
+If true (the default) then an existing L<Alien::Libarchive> will be
+used if version 0.19 or better is found.  Usually this is what you
+want.
 
 =back
 
