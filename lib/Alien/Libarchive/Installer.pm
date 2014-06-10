@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Installer for libarchive
-our $VERSION = '0.02'; # VERSION
+our $VERSION = '0.03'; # VERSION
 
 
 sub versions_available
@@ -78,7 +78,7 @@ sub build_requires
     }
     else
     {
-      $prereqs{'Alien::MSYS'} = '0,07';
+      $prereqs{'Alien::MSYS'} = '0.07';
       $prereqs{'PkgConfig'}   = '0.07620';
     }
   }
@@ -524,7 +524,7 @@ Alien::Libarchive::Installer - Installer for libarchive
 
 =head1 VERSION
 
-version 0.02
+version 0.03
 
 =head1 SYNOPSIS
 

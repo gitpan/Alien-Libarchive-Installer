@@ -17,7 +17,7 @@ name: Alien-Libarchive-Installer
 requires:
   perl: '5.006'
 resources:
-  bugtracker: https://github.com/plicease/alien-libarchive-installer/issues
-  homepage: http://perl.wdlabs.com/Alien-Libarchive-Installer/
-  repository: git://github.com/plicease/alien-libarchive-installer.git
-version: '0.02'
+  bugtracker: https://github.com/plicease/Alien-Libarchive-Installer/issues
+  homepage: http://perl.wdlabs.com/Alien-Libarchive-Installer
+  repository: git://github.com/plicease/Alien-Libarchive-Installer.git
+version: '0.03'
