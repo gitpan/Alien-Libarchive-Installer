@@ -1,5 +1,8 @@
 Revision history for Alien-Libarchive-Installer
 
+0.05      2014-06-11 05:23:31 -0400
+  - make t/versions_available.t contingent on HTTP::Tiny
+
 0.04      2014-06-10 12:48:25 -0400
   - fix test failure when HTTP::Tiny is not installed
 

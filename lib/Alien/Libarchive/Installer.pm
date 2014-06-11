@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Installer for libarchive
-our $VERSION = '0.04'; # VERSION
+our $VERSION = '0.05'; # VERSION
 
 
 sub versions_available
@@ -405,7 +405,6 @@ sub test_compile_run
     return;
   }
   
-  return unless $cbuilder->have_compiler;
   require File::Spec;
   my $dir = $opt{dir} || do { require File::Temp; File::Temp::tempdir( CLEANUP => 1 ) };
   my $fn = File::Spec->catfile($dir, 'test.c');
@@ -489,6 +488,7 @@ sub test_ffi
 {
   my($self) = @_;
   require FFI::Raw;
+  delete $self->{error};
 
   foreach my $dll ($self->dlls)
   {
@@ -504,6 +504,7 @@ sub test_ffi
       return $self->{version} = join '.', map { int } $1, $2, $3;
     }
   }
+  $self->{error} = 'could not find archive_version_number';
   return; 
 }
 
@@ -524,7 +525,7 @@ Alien::Libarchive::Installer - Installer for libarchive
 
 =head1 VERSION
 
-version 0.04
+version 0.05
 
 =head1 SYNOPSIS
 
@@ -621,7 +622,7 @@ Versions will be sorted from oldest (smallest) to newest (largest).
  my $location = Alien::Libarchive::Installer->fetch(%options);
 
 B<NOTE:> using this method may (and probably does) require modules
-returned by the L<build_requires|Alien::Libarchive::Installer>
+returned by the L<build_requires|Alien::Libarchive::Installer#build_requires>
 method.
 
 Download libarchive source from the internet.  By default it will

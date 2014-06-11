@@ -26,6 +26,7 @@
       },
       "runtime" : {
          "requires" : {
+            "ExtUtils::CBuilder" : "0",
             "perl" : "5.006"
          }
       },
@@ -47,6 +48,6 @@
          "web" : "https://github.com/plicease/Alien-Libarchive-Installer"
       }
    },
-   "version" : "0.04"
+   "version" : "0.05"
 }
 
