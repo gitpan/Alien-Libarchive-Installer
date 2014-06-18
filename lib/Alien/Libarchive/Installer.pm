@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Installer for libarchive
-our $VERSION = '0.05'; # VERSION
+our $VERSION = '0.06'; # VERSION
 
 
 sub versions_available
@@ -106,12 +106,27 @@ sub system_install
   if($options{alien} && eval q{ use Alien::Libarchive 0.19; 1 })
   {
     my $alien = Alien::Libarchive->new;
+    
+    require File::Spec;
+    my $dir;
+    my(@dlls) = map { 
+      my($v,$d,$f) = File::Spec->splitpath($_); 
+      $dir = [$v,File::Spec->splitdir($d)]; 
+      $f;
+    } $alien->dlls;
+    
     my $build = bless {
-      cflags => $alien->cflags,
-      libs   => $alien->libs,
+      cflags  => [$alien->cflags],
+      libs    => [$alien->libs],
+      dll_dir => $dir,
+      dlls    => \@dlls,
+      prefix  => File::Spec->rootdir,
     }, $class;
-    return $build if $options{test} =~ /^(compile|both)$/ && $build->test_compile_run;
-    return $build if $options{test} =~ /^(ffi|both)$/ && $build->test_compile_run;
+    eval {
+      $build->test_compile_run || die $build->error if $options{test} =~ /^(compile|both)$/;
+      $build->test_ffi || die $build->error if $options{test} =~ /^(ffi|both)$/;
+    };
+    return $build unless $@;
   }
 
   my $build = bless {
@@ -384,7 +399,7 @@ sub dlls
         $self->{dlls} = [ $file ];
       }
       $self->{dll_dir} = [];
-      $prefix = File::Spec->catpath($vol, $dirs);
+      $self->{prefix} = $prefix = File::Spec->catpath($vol, $dirs);
     }
   }
   
@@ -397,7 +412,8 @@ sub test_compile_run
 {
   my($self, %opt) = @_;
   delete $self->{error};
-  my $cbuilder = $opt{cbuilder} || do { require ExtUtils::CBuilder; ExtUtils::CBuilder->new(quiet => 1) };
+  $self->{quiet} = 1 unless defined $self->{quiet};
+  my $cbuilder = $opt{cbuilder} || do { require ExtUtils::CBuilder; ExtUtils::CBuilder->new(quiet => $self->{quiet}) };
   
   unless($cbuilder->have_compiler)
   {
@@ -525,7 +541,7 @@ Alien::Libarchive::Installer - Installer for libarchive
 
 =head1 VERSION
 
-version 0.05
+version 0.06
 
 =head1 SYNOPSIS
 
@@ -556,7 +572,7 @@ Build.PL
  my $installer = eval {
    my $system_installer = Alien::Libarchive::Installer->system_install;
    die "we require 3.0.x or better"
-     if $system->version !~ /^(\[0-9]+)\./ && $1 >= 3;
+     if $system->version !~ /^([0-9]+)\./ && $1 >= 3;
    $system_installer;
       # reasonably assumes that build_install will never download
       # a version older that 3.0
@@ -823,6 +839,12 @@ be created.
 Directory to use for building the executable.
 If not specified, a temporary directory will be
 created and removed when Perl terminates.
+
+=item quiet
+
+Passed into L<ExtUtils::CBuilder> if you do not
+provide your own instance.  The default is true
+(unlike L<ExtUtils::CBuilder> itself).
 
 =back
 
