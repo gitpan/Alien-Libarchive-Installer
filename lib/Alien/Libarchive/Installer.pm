@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Installer for libarchive
-our $VERSION = '0.06'; # VERSION
+our $VERSION = '0.07'; # VERSION
 
 
 sub versions_available
@@ -103,7 +103,7 @@ sub system_install
   die "test must be one of compile, ffi or both"
     unless $options{test} =~ /^(compile|ffi|both)$/;
 
-  if($options{alien} && eval q{ use Alien::Libarchive 0.19; 1 })
+  if($options{alien} && eval q{ use Alien::Libarchive 0.21; 1 })
   {
     my $alien = Alien::Libarchive->new;
     
@@ -541,7 +541,7 @@ Alien::Libarchive::Installer - Installer for libarchive
 
 =head1 VERSION
 
-version 0.06
+version 0.07
 
 =head1 SYNOPSIS
 
@@ -686,7 +686,7 @@ B<NOTE:> using this method may require modules returned by the
 L<system_requires|Alien::Libarchive::Installer> method.
 
 B<NOTE:> This form will also use the libarchive provided by L<Alien::Libarchive>
-if version 0.19 or better is installed.  This makes this method ideal for
+if version 0.21 or better is installed.  This makes this method ideal for
 finding libarchive as an optional dependency.
 
 Options:
@@ -723,7 +723,7 @@ to verify
 =item alien
 
 If true (the default) then an existing L<Alien::Libarchive> will be
-used if version 0.19 or better is found.  Usually this is what you
+used if version 0.21 or better is found.  Usually this is what you
 want.
 
 =back
