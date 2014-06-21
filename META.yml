@@ -21,4 +21,4 @@ resources:
   bugtracker: https://github.com/plicease/Alien-Libarchive-Installer/issues
   homepage: http://perl.wdlabs.com/Alien-Libarchive-Installer
   repository: git://github.com/plicease/Alien-Libarchive-Installer.git
-version: '0.07'
+version: 0.07_01

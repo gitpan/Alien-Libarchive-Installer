@@ -36,7 +36,7 @@
          }
       }
    },
-   "release_status" : "stable",
+   "release_status" : "testing",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/plicease/Alien-Libarchive-Installer/issues"
@@ -48,6 +48,6 @@
          "web" : "https://github.com/plicease/Alien-Libarchive-Installer"
       }
    },
-   "version" : "0.07"
+   "version" : "0.07_01"
 }
 
