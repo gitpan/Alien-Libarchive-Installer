@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Installer for libarchive
-our $VERSION = '0.07_01'; # VERSION
+our $VERSION = '0.08'; # VERSION
 
 
 sub versions_available
@@ -593,7 +593,7 @@ Alien::Libarchive::Installer - Installer for libarchive
 
 =head1 VERSION
 
-version 0.07_01
+version 0.08
 
 =head1 SYNOPSIS
 
