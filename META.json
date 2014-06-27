@@ -27,6 +27,8 @@
       "runtime" : {
          "requires" : {
             "ExtUtils::CBuilder" : "0",
+            "Role::Tiny" : "0",
+            "base" : "0",
             "perl" : "5.006"
          }
       },
@@ -36,7 +38,7 @@
          }
       }
    },
-   "release_status" : "stable",
+   "release_status" : "testing",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/plicease/Alien-Libarchive-Installer/issues"
@@ -48,6 +50,6 @@
          "web" : "https://github.com/plicease/Alien-Libarchive-Installer"
       }
    },
-   "version" : "0.08"
+   "version" : "0.08_01"
 }
 

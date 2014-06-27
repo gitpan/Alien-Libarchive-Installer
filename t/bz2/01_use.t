@@ -2,4 +2,4 @@ use strict;
 use warnings;
 use Test::More tests => 1;
 
-use_ok 'Alien::Libarchive::Installer';
+use_ok 'Alien::bz2::Installer';
