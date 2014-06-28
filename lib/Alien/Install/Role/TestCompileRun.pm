@@ -6,7 +6,7 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Test compile alien role
-our $VERSION = '0.01_01'; # VERSION
+our $VERSION = '0.08_02'; # VERSION
 
 requires 'error';
 requires 'test_compile_run_program';
@@ -102,7 +102,7 @@ Alien::Install::Role::TestCompileRun - Test compile alien role
 
 =head1 VERSION
 
-version 0.08_01
+version 0.08_02
 
 =head1 AUTHOR
 

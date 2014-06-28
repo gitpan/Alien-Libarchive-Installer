@@ -8,7 +8,6 @@ META.json
 META.yml
 README
 dist.ini
-inc/InstallerBeta.pm
 lib/Alien/Install.pm
 lib/Alien/Install/Role/Autoconf.pm
 lib/Alien/Install/Role/CMake.pm
@@ -18,6 +17,7 @@ lib/Alien/Install/Role/Tar.pm
 lib/Alien/Install/Role/TestCompileRun.pm
 lib/Alien/Install/Role/TestFFI.pm
 lib/Alien/Install/Util.pm
+lib/Alien/LZO/Installer.pm
 lib/Alien/Libarchive/Installer.pm
 lib/Alien/bz2/Installer.pm
 t/00_diag.t
@@ -41,6 +41,15 @@ t/libarchive/system_requires.t
 t/libarchive/test_compile_run.t
 t/libarchive/test_ffi.t
 t/libarchive/versions.t
+t/lzo/01_use.t
+t/lzo/build_install.t
+t/lzo/build_requires.t
+t/lzo/fetch.t
+t/lzo/system_install.t
+t/lzo/system_requires.t
+t/lzo/test_compiler_run.t
+t/lzo/test_ffi.t
+t/lzo/versions_available.t
 xt/release/build_environment.t
 xt/release/changes.t
 xt/release/eol.t

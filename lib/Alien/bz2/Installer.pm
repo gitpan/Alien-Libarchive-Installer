@@ -5,7 +5,7 @@ use warnings;
 use Alien::Install::Util;
 
 # ABSTRACT: Installer for bz2
-our $VERSION = '0.03_01'; # VERSION
+our $VERSION = '0.08_02'; # VERSION
 
 
 sub versions_available
@@ -392,7 +392,7 @@ Alien::bz2::Installer - Installer for bz2
 
 =head1 VERSION
 
-version 0.08_01
+version 0.08_02
 
 =head1 SYNOPSIS
 

@@ -6,38 +6,45 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Installer role for downloading via HTTP
-our $VERSION = '0.01_01'; # VERSION
+our $VERSION = '0.08_02'; # VERSION
 
-requires 'versions_url';
-requires 'versions_process';
-requires 'versions_sort';
+requires '_config_versions_url';
+requires '_config_versions_process';
+
+sub _version_sort
+{
+  shift; # $class
+  sort { $a <=> $b } @_;
+}
 
 sub versions
 {
   my($class) = @_;
   require HTTP::Tiny;
-  my $url = $class->versions_url;
+  my $url = $class->_config_versions_url;
   my $response = HTTP::Tiny->new->get($url);
   
   die sprintf("%s %s %s", $response->{status}, $response->{reason}, $url)
     unless $response->{success};
 
-  my $process = $class->versions_process;
+  my $process = $class->_config_versions_process;
+  
+  my $sort = eval { $class->_config_versions_sort } || \&_version_sort;
   
   if(ref($process) eq 'CODE')
   {
-    return $class->versions_sort($process->($response->{content}));
+    return $sort->($process->($response->{content}));
   }
   elsif(ref($process) eq 'Regexp')
   {
     my @versions;
     push @versions, [$1,$2,$3] while $response->{content} =~ $process;
-    return $class->versions_sort(@versions);
+    return $sort->(@versions);
     
   }
 }
 
-requires 'fetch_url';
+requires '_config_fetch_url';
 
 sub fetch
 {
@@ -61,7 +68,7 @@ sub fetch
     return wantarray ? ($fn, $version) : $fn;
   }
 
-  my $url = $class->fetch_url($version);
+  my $url = $class->_config_fetch_url->($class, $version);
   
   require HTTP::Tiny;  
   my $response = HTTP::Tiny->new->get($url);
@@ -84,10 +91,6 @@ sub fetch
 
 register_build_requires 'HTTP::Tiny' => 0;
 
-sub cflags  { shift->{cflags}  }
-sub libs    { shift->{libs}    }
-sub version { shift->{version} }
-
 1;
 
 __END__
@@ -102,7 +105,7 @@ Alien::Install::Role::HTTP - Installer role for downloading via HTTP
 
 =head1 VERSION
 
-version 0.08_01
+version 0.08_02
 
 =head1 AUTHOR
 

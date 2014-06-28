@@ -6,7 +6,7 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Role for Alien::Install
-our $VERSION = '0.01_01'; # VERSION
+our $VERSION = '0.08_02'; # VERSION
 
 requires 'versions';
 requires 'fetch';
@@ -111,7 +111,10 @@ register_hook 'post_install' => sub {
   }
 };
 
-sub error { shift->{error} }
+sub error   { shift->{error}   }
+sub cflags  { shift->{cflags}  }
+sub libs    { shift->{libs}    }
+sub version { shift->{version} }
 
 1;
 
@@ -127,7 +130,7 @@ Alien::Install::Role::Installer - Role for Alien::Install
 
 =head1 VERSION
 
-version 0.08_01
+version 0.08_02
 
 =head1 AUTHOR
 

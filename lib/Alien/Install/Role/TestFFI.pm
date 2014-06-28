@@ -6,7 +6,7 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Test ffi alien role
-our $VERSION = '0.01_01'; # VERSION
+our $VERSION = '0.08_02'; # VERSION
 
 requires 'test_ffi_signature';
 requires 'test_ffi_version';
@@ -49,7 +49,7 @@ Alien::Install::Role::TestFFI - Test ffi alien role
 
 =head1 VERSION
 
-version 0.08_01
+version 0.08_02
 
 =head1 AUTHOR
 
