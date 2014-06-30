@@ -7,7 +7,7 @@ use Alien::Install::Util;
 use Carp qw( carp );
 
 # ABSTRACT: Installer for libarchive
-our $VERSION = '0.08_02'; # VERSION
+our $VERSION = '0.08_03'; # VERSION
 
 config
   versions_url     => 'http://www.libarchive.org/downloads/',
@@ -337,7 +337,7 @@ Alien::Libarchive::Installer - Installer for libarchive
 
 =head1 VERSION
 
-version 0.08_02
+version 0.08_03
 
 =head1 SYNOPSIS
 
@@ -396,6 +396,10 @@ FFI::Raw
  }
 
 =head1 DESCRIPTION
+
+B<Note>: I am in the process of refactoring this into a more generic
+set of roles that can be used for other "installer" classes.  Until
+the refactoring process is complete it will be quite messy in here.
 
 This distribution contains the logic for finding existing libarchive
 installs, and building new ones.  If you do not care much about the

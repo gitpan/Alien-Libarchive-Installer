@@ -6,7 +6,7 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Role for Alien::Install
-our $VERSION = '0.08_02'; # VERSION
+our $VERSION = '0.08_03'; # VERSION
 
 requires 'versions';
 requires 'fetch';
@@ -130,7 +130,7 @@ Alien::Install::Role::Installer - Role for Alien::Install
 
 =head1 VERSION
 
-version 0.08_02
+version 0.08_03
 
 =head1 AUTHOR
 

@@ -7,7 +7,7 @@ use Alien::Install::Util;
 use Carp qw( carp );
 
 # ABSTRACT: Installer role for Autoconf
-our $VERSION = '0.08_02'; # VERSION
+our $VERSION = '0.08_03'; # VERSION
 
 requires 'extract';
 requires 'chdir_source';
@@ -126,7 +126,7 @@ Alien::Install::Role::Autoconf - Installer role for Autoconf
 
 =head1 VERSION
 
-version 0.08_02
+version 0.08_03
 
 =head1 AUTHOR
 

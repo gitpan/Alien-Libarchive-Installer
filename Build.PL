@@ -18,7 +18,7 @@ my %module_build_args = (
     "Graham Ollis <plicease\@cpan.org>"
   ],
   "dist_name" => "Alien-Libarchive-Installer",
-  "dist_version" => "0.08_02",
+  "dist_version" => "0.08_03",
   "license" => "perl",
   "module_name" => "Alien::Libarchive::Installer",
   "recommends" => {},
