@@ -6,7 +6,7 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Installer role for downloading via HTTP
-our $VERSION = '0.08_03'; # VERSION
+our $VERSION = '0.08_04'; # VERSION
 
 requires '_config_versions_url';
 requires '_config_versions_process';
@@ -33,13 +33,13 @@ sub versions
   
   if(ref($process) eq 'CODE')
   {
-    return $sort->($process->($response->{content}));
+    return $sort->($class, $process->($response->{content}));
   }
   elsif(ref($process) eq 'Regexp')
   {
-    my @versions;
-    push @versions, [$1,$2,$3] while $response->{content} =~ $process;
-    return $sort->(@versions);
+    my %versions;
+    $versions{$1} = 1 while $response->{content} =~ /$process/g;
+    return $sort->($class, keys %versions);
     
   }
 }
@@ -105,7 +105,7 @@ Alien::Install::Role::HTTP - Installer role for downloading via HTTP
 
 =head1 VERSION
 
-version 0.08_03
+version 0.08_04
 
 =head1 AUTHOR
 

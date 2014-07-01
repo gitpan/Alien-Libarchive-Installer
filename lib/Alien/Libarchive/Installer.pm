@@ -7,7 +7,7 @@ use Alien::Install::Util;
 use Carp qw( carp );
 
 # ABSTRACT: Installer for libarchive
-our $VERSION = '0.08_03'; # VERSION
+our $VERSION = '0.08_04'; # VERSION
 
 config
   versions_url     => 'http://www.libarchive.org/downloads/',
@@ -28,6 +28,19 @@ config
     my(undef, $version) = @_;
     "http://www.libarchive.org/downloads/libarchive-$version.tar.gz";
   },
+  test_compile_run_program => join ("\n",
+    "#include <archive.h>",
+    "#include <archive_entry.h>",
+    "#include <stdio.h>",
+    "int",
+    "main(int argc, char *argv[])",
+    "{",
+    "  printf(\"version = '%s'\\n\", archive_version_string());",
+    "  return 0;",
+    "}",
+    "",
+  ),
+  test_compile_run_match => qr{version = 'libarchive (.*?)'},
 ;
 
 register_hook 'pre_instantiate' => sub {
@@ -291,24 +304,6 @@ sub dlls
 }
 
 
-use constant test_compile_run_program =>
-  join ("\n",
-    "#include <archive.h>",
-    "#include <archive_entry.h>",
-    "#include <stdio.h>",
-    "int",
-    "main(int argc, char *argv[])",
-    "{",
-    "  printf(\"version = '%s'\\n\", archive_version_string());",
-    "  return 0;",
-    "}",
-    "",
-  );
-;
-
-use constant test_compile_run_match => qr{version = 'libarchive (.*?)'};
-
-
 sub test_ffi_signature
 {
   require FFI::Raw;
@@ -337,7 +332,7 @@ Alien::Libarchive::Installer - Installer for libarchive
 
 =head1 VERSION
 
-version 0.08_03
+version 0.08_04
 
 =head1 SYNOPSIS
 

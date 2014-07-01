@@ -16,11 +16,11 @@ meta-spec:
 name: Alien-Libarchive-Installer
 requires:
   ExtUtils::CBuilder: '0'
-  Role::Tiny: '0'
+  Role::Tiny: '1.003001'
   base: '0'
   perl: '5.006'
 resources:
   bugtracker: https://github.com/plicease/Alien-Libarchive-Installer/issues
   homepage: http://perl.wdlabs.com/Alien-Libarchive-Installer
   repository: git://github.com/plicease/Alien-Libarchive-Installer.git
-version: 0.08_03
+version: 0.08_04

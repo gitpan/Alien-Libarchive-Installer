@@ -7,11 +7,11 @@ use Carp qw( croak );
 use base qw( Exporter );
 
 # ABSTRACT: Common utilities for Alien::Install roles and classes
-our $VERSION = '0.08_03'; # VERSION
+our $VERSION = '0.08_04'; # VERSION
 
 our @EXPORT_OK = qw( 
   catfile catdir catpath splitpath splitdir rootdir 
-  spew 
+  spew slurp
   register_build_requires register_system_requires register_hook 
   config
 );
@@ -73,7 +73,7 @@ sub register_build_requires (@)
   my $class = caller;
   while(my($mod,$ver) = each %new)
   {
-    $build_requires{$class}->{$mod} = $ver;
+    $build_requires{$class}->{$mod} ||= $ver;
   }
 }
 
@@ -87,7 +87,7 @@ sub register_system_requires (@)
   my $class = caller;
   while(my($mod,$ver) = each %new)
   {
-    $system_requires{$class}->{$mod} = $ver;
+    $system_requires{$class}->{$mod} ||= $ver;
   }
 }
 
@@ -104,8 +104,20 @@ sub spew ($$)
 {
   my($filename, $content) = @_;
   open my $fh, '>', $filename;
+  binmode $fh;
   print $fh $content;
   close $fh;
+}
+
+sub slurp ($)
+{
+  my($filename) = @_;
+  open my $fh, '<', $filename;
+  binmode $fh;
+  local $/;
+  my $data = <$fh>;
+  close $fh;
+  $data;
 }
 
 sub config (@)
@@ -141,7 +153,7 @@ Alien::Install::Util - Common utilities for Alien::Install roles and classes
 
 =head1 VERSION
 
-version 0.08_03
+version 0.08_04
 
 =head2 catfile
 

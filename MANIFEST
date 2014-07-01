@@ -9,6 +9,7 @@ META.yml
 README
 dist.ini
 lib/Alien/Install.pm
+lib/Alien/Install/Example/Libfoo/Installer.pm
 lib/Alien/Install/Role/Autoconf.pm
 lib/Alien/Install/Role/CMake.pm
 lib/Alien/Install/Role/HTTP.pm
@@ -32,6 +33,11 @@ t/bz2/test_compiler_run.t
 t/bz2/test_ffi.t
 t/bz2/versions_available.t
 t/install/01_use.t
+t/install/util_config.t
+t/install/util_filespec.t
+t/install/util_register_build_requires.t
+t/install/util_register_hook.t
+t/install/util_register_system_requires.t
 t/libarchive/01_use.t
 t/libarchive/build_install.t
 t/libarchive/build_requires.t
@@ -41,6 +47,15 @@ t/libarchive/system_requires.t
 t/libarchive/test_compile_run.t
 t/libarchive/test_ffi.t
 t/libarchive/versions.t
+t/libfoo/01_use.t
+t/libfoo/build_requires.t
+t/libfoo/fetch.t
+t/libfoo/lib/HTTP/Tiny.pm
+t/libfoo/libfoo-1.00.tar.gz
+t/libfoo/system_requires.t
+t/libfoo/test_compile_run.t
+t/libfoo/test_ffi.t
+t/libfoo/versions.t
 t/lzo/01_use.t
 t/lzo/build_install.t
 t/lzo/build_requires.t

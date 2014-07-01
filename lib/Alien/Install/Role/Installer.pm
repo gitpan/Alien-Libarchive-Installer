@@ -6,7 +6,7 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Role for Alien::Install
-our $VERSION = '0.08_03'; # VERSION
+our $VERSION = '0.08_04'; # VERSION
 
 requires 'versions';
 requires 'fetch';
@@ -29,7 +29,7 @@ sub build_requires
       {
         # TODO check if this is a newer or older
         # than existing $ver
-        $requires{$mod} = $ver;
+        $requires{$mod} ||= $ver;
       }
     }
   }
@@ -51,7 +51,7 @@ sub system_requires
       {
         # TODO check if this is a newer or older
         # than existing $ver
-        $requires{$mod} = $ver;
+        $requires{$mod} ||= $ver;
       }
     }
   }
@@ -65,13 +65,23 @@ sub call_hooks
 {
   my($class, $name, @args) = @_;
   # TODO probably could cache the hooks that we need for each class..
-  foreach my $role (keys %$hooks)
+  foreach my $role (sort keys %$hooks)
   {
-    if($class->isa($role) || $class->does($role))
+    if($class->does($role))
     {
       if(exists $hooks->{$role}->{$name})
       {
         $_->($class, @args) for @{ $hooks->{$role}->{$name} };
+      }
+    }
+  }
+  foreach my $other (sort keys %$hooks)
+  {
+    if($class->isa($other))
+    {
+      if(exists $hooks->{$other}->{$name})
+      {
+        $_->($class, @args) for @{ $hooks->{$other}->{$name} };
       }
     }
   }
@@ -130,7 +140,7 @@ Alien::Install::Role::Installer - Role for Alien::Install
 
 =head1 VERSION
 
-version 0.08_03
+version 0.08_04
 
 =head1 AUTHOR
 
