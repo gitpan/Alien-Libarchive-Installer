@@ -7,7 +7,7 @@ use Alien::Install::Util;
 use Carp qw( carp );
 
 # ABSTRACT: Installer role for Autoconf
-our $VERSION = '0.08_04'; # VERSION
+our $VERSION = '0.08_05'; # VERSION
 
 requires 'extract';
 requires 'chdir_source';
@@ -87,9 +87,9 @@ sub build_install
       },
     );
 
-    if($class->can('_config_libname'))
+    if($class->can('_config_name'))
     {
-      push @{ $flags{libs } }, '-l' . $class->_config_libname;
+      push @{ $flags{libs } }, '-l' . $class->_config_name;
     }
 
     $class->call_hooks('pre_instantiate', \%flags);
@@ -126,7 +126,7 @@ Alien::Install::Role::Autoconf - Installer role for Autoconf
 
 =head1 VERSION
 
-version 0.08_04
+version 0.08_05
 
 =head1 AUTHOR
 

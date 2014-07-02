@@ -7,7 +7,7 @@ use Carp qw( croak );
 use base qw( Exporter );
 
 # ABSTRACT: Common utilities for Alien::Install roles and classes
-our $VERSION = '0.08_04'; # VERSION
+our $VERSION = '0.08_05'; # VERSION
 
 our @EXPORT_OK = qw( 
   catfile catdir catpath splitpath splitdir rootdir 
@@ -153,7 +153,7 @@ Alien::Install::Util - Common utilities for Alien::Install roles and classes
 
 =head1 VERSION
 
-version 0.08_04
+version 0.08_05
 
 =head2 catfile
 

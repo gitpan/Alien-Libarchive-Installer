@@ -6,9 +6,10 @@ use Role::Tiny::With;
 use Alien::Install::Util;
 
 # ABSTRACT: Example installer for libfoo
-our $VERSION = '0.08_04'; # VERSION
+our $VERSION = '0.08_05'; # VERSION
 
 config
+  name             => 'foo',
   versions_url     => 'http://dist.wdlabs.com/',
   versions_process => qr{libfoo-([0-9]+\.[0-9]{2})\.tar\.gz},
   fetch_url        => sub {
@@ -25,6 +26,11 @@ config
     "  return 0;",
     "}",
   ),
+  test_ffi_signature => ['foo_version_string', 'str'],
+  test_ffi_version   => sub {
+    my(undef, $function) = @_;
+    $function->();
+  },
 ;
 
 with qw(
@@ -41,25 +47,6 @@ sub system_install
   die 'todo';
 }
 
-sub dlls
-{
-  die 'todo';
-}
-
-sub test_ffi_signature
-{
-  require FFI::Raw;
-  ('foo_version_string', FFI::Raw::str());
-}
-
-
-sub test_ffi_version
-{
-  my(undef, $function) = @_;
-  $function->();
-}
-
-
 1;
 
 __END__
@@ -74,7 +61,7 @@ Alien::Install::Example::Libfoo::Installer - Example installer for libfoo
 
 =head1 VERSION
 
-version 0.08_04
+version 0.08_05
 
 =head1 AUTHOR
 

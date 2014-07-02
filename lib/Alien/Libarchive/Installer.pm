@@ -7,9 +7,10 @@ use Alien::Install::Util;
 use Carp qw( carp );
 
 # ABSTRACT: Installer for libarchive
-our $VERSION = '0.08_04'; # VERSION
+our $VERSION = '0.08_05'; # VERSION
 
 config
+  name             => 'archive',
   versions_url     => 'http://www.libarchive.org/downloads/',
   versions_process => sub {
     my($content) = @_;
@@ -41,6 +42,12 @@ config
     "",
   ),
   test_compile_run_match => qr{version = 'libarchive (.*?)'},
+  test_ffi_signature     => [ 'archive_version_number', 'int' ],
+  test_ffi_version       => sub {
+    my(undef, $function) = @_;
+    return join '.', map { int } $1, $2, $3 if $function->() =~ /^([0-9]+)([0-9]{3})([0-9]{3})/;
+    return;
+  },
 ;
 
 register_hook 'pre_instantiate' => sub {
@@ -254,70 +261,6 @@ register_hook post_install => sub {
 };
 
 
-# TODO: move to Alien::Install::*
-
-sub dlls
-{
-  my($self, $prefix) = @_;
-  
-  $prefix = $self->{prefix} unless defined $prefix;
-  
-  unless(defined $self->{dlls} && defined $self->{dll_dir})
-  {
-    # Question: is this necessary in light of the better
-    # dll detection now done in system_install ?
-    if($^O eq 'cygwin')
-    {
-      # /usr/bin/cygarchive-13.dll
-      opendir my $dh, '/usr/bin';
-      $self->{dlls} = [grep /^cygarchive-[0-9]+.dll$/i, readdir $dh];
-      $self->{dll_dir} = [];
-      $prefix = '/usr/bin';
-      closedir $dh;
-    }
-    else
-    {
-      require DynaLoader;
-      $self->{libs} = [] unless defined $self->{libs};
-      $self->{libs} = [ $self->{libs} ] unless ref $self->{libs};
-      my $path = DynaLoader::dl_findfile(grep /^-l/, @{ $self->libs });
-      die "unable to find dynamic library" unless defined $path;
-      my($vol, $dirs, $file) = splitpath $path;
-      if($^O eq 'openbsd')
-      {
-        # on openbsd we get the .a file back, so have to scan
-        # for .so.#.# as there is no .so symlink
-        opendir(my $dh, $dirs);
-        $self->{dlls} = [grep /^libarchive.so/, readdir $dh];
-        closedir $dh;
-      }
-      else
-      {
-        $self->{dlls} = [ $file ];
-      }
-      $self->{dll_dir} = [];
-      $self->{prefix} = $prefix = catpath($vol, $dirs);
-    }
-  }
-  
-  map { catfile $prefix, @{ $self->{dll_dir} }, $_  } @{ $self->{dlls} };
-}
-
-
-sub test_ffi_signature
-{
-  require FFI::Raw;
-  ('archive_version_number', FFI::Raw::int());
-}
-
-sub test_ffi_version
-{
-  my(undef, $function) = @_;
-  return join '.', map { int } $1, $2, $3 if $function->() =~ /^([0-9]+)([0-9]{3})([0-9]{3})/;
-  return;
-}
-
-
 1;
 
 __END__
@@ -332,7 +275,7 @@ Alien::Libarchive::Installer - Installer for libarchive
 
 =head1 VERSION
 
-version 0.08_04
+version 0.08_05
 
 =head1 SYNOPSIS
 

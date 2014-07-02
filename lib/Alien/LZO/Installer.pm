@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Installer for LZO
-our $VERSION = '0.08_04'; # VERSION
+our $VERSION = '0.08_05'; # VERSION
 
 sub _catfile {
   my $path = File::Spec->catfile(@_);
@@ -479,7 +479,7 @@ Alien::LZO::Installer - Installer for LZO
 
 =head1 VERSION
 
-version 0.08_04
+version 0.08_05
 
 =head1 SYNOPSIS
 

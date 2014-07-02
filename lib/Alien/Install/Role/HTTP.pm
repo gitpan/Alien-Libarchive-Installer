@@ -6,7 +6,7 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Installer role for downloading via HTTP
-our $VERSION = '0.08_04'; # VERSION
+our $VERSION = '0.08_05'; # VERSION
 
 requires '_config_versions_url';
 requires '_config_versions_process';
@@ -105,7 +105,7 @@ Alien::Install::Role::HTTP - Installer role for downloading via HTTP
 
 =head1 VERSION
 
-version 0.08_04
+version 0.08_05
 
 =head1 AUTHOR
 
