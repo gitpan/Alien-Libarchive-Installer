@@ -15,6 +15,7 @@ meta-spec:
   version: '1.4'
 name: Alien-Libarchive-Installer
 requires:
+  Class::Method::Modifiers: '0'
   ExtUtils::CBuilder: '0'
   Role::Tiny: '1.003001'
   base: '0'
@@ -23,4 +24,4 @@ resources:
   bugtracker: https://github.com/plicease/Alien-Libarchive-Installer/issues
   homepage: http://perl.wdlabs.com/Alien-Libarchive-Installer
   repository: git://github.com/plicease/Alien-Libarchive-Installer.git
-version: 0.08_05
+version: 0.08_06

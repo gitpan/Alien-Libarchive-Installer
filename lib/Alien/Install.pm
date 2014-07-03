@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Install your aliens
-our $VERSION = '0.08_05'; # VERSION
+our $VERSION = '0.08_06'; # VERSION
 
 
 1;
@@ -21,9 +21,13 @@ Alien::Install - Install your aliens
 
 =head1 VERSION
 
-version 0.08_05
+version 0.08_06
 
 =head1 DESCRIPTION
+
+B<NOTE>: This is a work in progress.  Everything here is
+subject to change until it gets released to CPAN (and to
+a lesser extent after as well).
 
 I'm working on abstracting out all the generic bits out of
 L<Alien::Libarchive::Installer> to eventually make a

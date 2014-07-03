@@ -6,45 +6,36 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Installer role for downloading via HTTP
-our $VERSION = '0.08_05'; # VERSION
+our $VERSION = '0.08_06'; # VERSION
 
-requires '_config_versions_url';
-requires '_config_versions_process';
-
-sub _version_sort
-{
-  shift; # $class
-  sort { $a <=> $b } @_;
-}
+requires 'alien_config_versions_url';
+requires 'alien_config_versions_process';
 
 sub versions
 {
   my($class) = @_;
   require HTTP::Tiny;
-  my $url = $class->_config_versions_url;
+  my $url = $class->alien_config_versions_url;
   my $response = HTTP::Tiny->new->get($url);
   
   die sprintf("%s %s %s", $response->{status}, $response->{reason}, $url)
     unless $response->{success};
 
-  my $process = $class->_config_versions_process;
-  
-  my $sort = eval { $class->_config_versions_sort } || \&_version_sort;
+  my $process = $class->alien_config_versions_process;
   
   if(ref($process) eq 'CODE')
   {
-    return $sort->($class, $process->($response->{content}));
+    return $process->($response->{content});
   }
   elsif(ref($process) eq 'Regexp')
   {
-    my %versions;
-    $versions{$1} = 1 while $response->{content} =~ /$process/g;
-    return $sort->($class, keys %versions);
-    
+    my @versions;
+    push @versions, $1 while $response->{content} =~ /$process/g;
+    return @versions;
   }
 }
 
-requires '_config_fetch_url';
+requires 'alien_config_fetch_url';
 
 sub fetch
 {
@@ -59,16 +50,7 @@ sub fetch
     $versions[-1];
   };
   
-  my $env = uc $class;
-  $env =~ s/::/_/g;
-
-  if(defined $ENV{"$env\_MIRROR"})
-  {
-    my $fn = catfile($ENV{"$env\_MIRROR"}, "libarchive-$version.tar.gz");
-    return wantarray ? ($fn, $version) : $fn;
-  }
-
-  my $url = $class->_config_fetch_url->($class, $version);
+  my $url = $class->alien_config_fetch_url->($class, $version);
   
   require HTTP::Tiny;  
   my $response = HTTP::Tiny->new->get($url);
@@ -105,7 +87,7 @@ Alien::Install::Role::HTTP - Installer role for downloading via HTTP
 
 =head1 VERSION
 
-version 0.08_05
+version 0.08_06
 
 =head1 AUTHOR
 

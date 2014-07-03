@@ -7,7 +7,7 @@ use Alien::Install::Util;
 use Carp qw( carp );
 
 # ABSTRACT: Installer role for CMake
-our $VERSION = '0.08_05'; # VERSION
+our $VERSION = '0.08_06'; # VERSION
 
 requires 'extract';
 requires 'chdir_source';
@@ -71,12 +71,12 @@ sub build_install
       dlls    => $class->build_install_dlls(catdir($prefix, 'dll')),
     }, $class;
 
-    $class->call_hooks('post_instantiate');
+    $build->call_hooks('post_instantiate');
     
     $build->test_compile_run || die $build->error if $options{test} =~ /^(compile|both)$/;
     $build->test_ffi         || die $build->error if $options{test} =~ /^(ffi|both)$/;
     
-    $class->call_hooks('post_test');
+    $build->call_hooks('post_test');
     
     $build;
   };
@@ -101,7 +101,7 @@ Alien::Install::Role::CMake - Installer role for CMake
 
 =head1 VERSION
 
-version 0.08_05
+version 0.08_06
 
 =head1 AUTHOR
 

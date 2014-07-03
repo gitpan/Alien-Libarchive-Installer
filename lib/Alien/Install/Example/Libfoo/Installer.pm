@@ -6,7 +6,8 @@ use Role::Tiny::With;
 use Alien::Install::Util;
 
 # ABSTRACT: Example installer for libfoo
-our $VERSION = '0.08_05'; # VERSION
+our $VERSION = '0.08_06'; # VERSION
+
 
 config
   name             => 'foo',
@@ -40,12 +41,32 @@ with qw(
   Alien::Install::Role::Autoconf
   Alien::Install::Role::TestCompileRun
   Alien::Install::Role::TestFFI
+  Alien::Install::Role::VersionSortSimple
 );
 
-sub system_install
-{
-  die 'todo';
-}
+register_hook
+  system_install_flags_guess => sub {
+    my(undef, $build) = @_;
+    my $prefix = $ENV{ALIEN_LIBFOO_PREFIX};
+    if(defined $prefix)
+    {
+      unshift @{ $build->{cflags} }, "-I$prefix/include";
+      unshift @{ $build->{libs}   }, "-L$prefix/lib";
+    }
+  }
+;
+
+register_hook
+  system_install_search_list => sub {
+    my(undef, $list) = @_;
+    my $prefix = $ENV{ALIEN_LIBFOO_PREFIX};
+    if(defined $prefix)
+    {
+      unshift @$list, catdir($prefix, 'bin');
+      unshift @$list, catdir($prefix, 'lib');
+    }
+  }
+;
 
 1;
 
@@ -61,7 +82,40 @@ Alien::Install::Example::Libfoo::Installer - Example installer for libfoo
 
 =head1 VERSION
 
-version 0.08_05
+version 0.08_06
+
+=head1 SYNOPSIS
+
+Build.PL
+
+ # as an optional dep
+ use Alien::Install::Example::Libfoo::Installer;
+ use Module::Build;
+ 
+ my %build_args;
+ 
+ my $installer = eval { Alien::Install::Example::Libfoo::Installer };
+ if($installer)
+ {
+   $build_args{extra_compiler_flags} = $installer->cflags;
+   $build_args{extra_linker_flags}   = $installer->libs;
+ }
+ 
+ my $build = Module::Build->new(%build_args);
+ $build->create_build_script;
+
+=head1 DESCRIPTION
+
+This module provides an example installer for C<libfoo>.
+It is used in testing L<Alien::Install>.
+
+=head1 SEE ALSO
+
+=over 4
+
+=item L<Alien::Install>
+
+=back
 
 =head1 AUTHOR
 

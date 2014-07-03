@@ -18,12 +18,13 @@ my %module_build_args = (
     "Graham Ollis <plicease\@cpan.org>"
   ],
   "dist_name" => "Alien-Libarchive-Installer",
-  "dist_version" => "0.08_05",
+  "dist_version" => "0.08_06",
   "license" => "perl",
   "module_name" => "Alien::Libarchive::Installer",
   "recommends" => {},
   "recursive_test_files" => 1,
   "requires" => {
+    "Class::Method::Modifiers" => 0,
     "ExtUtils::CBuilder" => 0,
     "Role::Tiny" => "1.003001",
     "base" => 0,

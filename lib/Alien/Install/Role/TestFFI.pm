@@ -6,10 +6,10 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Test ffi alien role
-our $VERSION = '0.08_05'; # VERSION
+our $VERSION = '0.08_06'; # VERSION
 
-requires '_config_test_ffi_signature';
-requires '_config_test_ffi_version';
+requires 'alien_config_test_ffi_signature';
+requires 'alien_config_test_ffi_version';
 
 sub test_ffi
 {
@@ -17,7 +17,7 @@ sub test_ffi
   require FFI::Raw;
   delete $self->{error};
   
-  my($name, $ret, @args) = @{ $self->_config_test_ffi_signature };
+  my($name, $ret, @args) = @{ $self->alien_config_test_ffi_signature };
 
   my @sig = ($name, map { my $val = eval qq{FFI::Raw::$_()}; $@ ? die $@ : $val } ($ret, @args));
   
@@ -30,7 +30,7 @@ sub test_ffi
       );
     };
     next if $@;
-    my $version = $self->_config_test_ffi_version->($self, $function);
+    my $version = $self->alien_config_test_ffi_version->($self, $function);
     return $self->{version} = $version if defined $version;
   }
   $self->{error} = "could not find $sig[0]";
@@ -51,7 +51,7 @@ Alien::Install::Role::TestFFI - Test ffi alien role
 
 =head1 VERSION
 
-version 0.08_05
+version 0.08_06
 
 =head1 AUTHOR
 

@@ -7,7 +7,7 @@ use Alien::Install::Util;
 use Carp qw( carp );
 
 # ABSTRACT: Installer for libarchive
-our $VERSION = '0.08_05'; # VERSION
+our $VERSION = '0.08_06'; # VERSION
 
 config
   name             => 'archive',
@@ -17,13 +17,6 @@ config
     my @versions;
     push @versions, "$1.$2.$3" while $content =~ /libarchive-([1-9][0-9]*)\.([0-9]+)\.([0-9]+)\.tar.gz/g;
     @versions;
-  },
-  versions_sort    => sub {
-    shift; # $class
-    map { join '.', @$_ } 
-    sort { $a->[0] <=> $b->[0] || $a->[1] <=> $b->[1] || $a->[2] <=> $b->[2] } 
-    map { [split /\./, $_] }
-    @_;
   },
   fetch_url        => sub {
     my(undef, $version) = @_;
@@ -48,6 +41,12 @@ config
     return join '.', map { int } $1, $2, $3 if $function->() =~ /^([0-9]+)([0-9]{3})([0-9]{3})/;
     return;
   },
+  alien_version => '0.21',
+  system_install_flags_guess => sub {
+    my(undef, $build) = @_;
+    $build->{cflags} = _try_pkg_config(undef, 'cflags', '', '');
+    $build->{libs}   = _try_pkg_config(undef, 'libs',   '-larchive', '');
+  },
 ;
 
 register_hook 'pre_instantiate' => sub {
@@ -67,6 +66,7 @@ if($^O eq 'MSWin32' && do { require Config; $Config::Config{cc} =~ /cl(\.exe)?$/
     Alien::Install::Role::CMake
     Alien::Install::Role::TestCompileRun
     Alien::Install::Role::TestFFI
+    Alien::Install::Role::VersionSortMultiple
   );
 }
 else
@@ -78,106 +78,11 @@ else
     Alien::Install::Role::Autoconf
     Alien::Install::Role::TestCompileRun
     Alien::Install::Role::TestFFI
+    Alien::Install::Role::VersionSortMultiple
   );
   
   register_build_requires 'PkgConfig'   => '0.07620' if $^O eq 'MSWin32';
 }
-
-
-# TODO: move to Alien::Install::*
-sub system_install
-{
-  my($class, %options) = @_;
-
-  $options{alien} = 1 unless defined $options{alien};
-  $options{test} ||= 'compile';
-  die "test must be one of compile, ffi or both"
-    unless $options{test} =~ /^(compile|ffi|both)$/;
-
-  if($options{alien} && eval q{ use Alien::Libarchive 0.21; 1 })
-  {
-    my $alien = Alien::Libarchive->new;
-    
-    my $dir;
-    my(@dlls) = map { 
-      my($v,$d,$f) = splitpath $_; 
-      $dir = [$v,splitdir $d]; 
-      $f;
-    } $alien->dlls;
-    
-    my $build = bless {
-      cflags  => [$alien->cflags],
-      libs    => [$alien->libs],
-      dll_dir => $dir,
-      dlls    => \@dlls,
-      prefix  => rootdir,
-    }, $class;
-    eval {
-      $build->test_compile_run || die $build->error if $options{test} =~ /^(compile|both)$/;
-      $build->test_ffi || die $build->error if $options{test} =~ /^(ffi|both)$/;
-    };
-    return $build unless $@;
-  }
-  
-  my $build = bless {
-    cflags => _try_pkg_config(undef, 'cflags', '', ''),
-    libs   => _try_pkg_config(undef, 'libs',   '-larchive', ''),
-  }, $class;
-  
-  if($options{test} =~ /^(ffi|both)$/)
-  {
-    my @dir_search_list;
-    
-    if($^O eq 'MSWin32')
-    {
-      # On MSWin32 the entire path is not included in dl_library_path
-      # buth that is the most likely place that we will find dlls.
-      @dir_search_list = grep { -d $_ } split /;/, $ENV{PATH};
-    }
-    else
-    {
-      require DynaLoader;
-      @dir_search_list = grep { -d $_ } @DynaLoader::dl_library_path
-    }
-    
-    found_dll: foreach my $dir (@dir_search_list)
-    {
-      my $dh;
-      opendir($dh, $dir) || next;
-      # sort by filename length so that libarchive.so.12.0.4
-      # is preferred over libarchive.so.12 or libarchive.so
-      # if only to make diagnostics point to the more specific
-      # version.
-      foreach my $file (sort { length $b <=> length $a } readdir $dh)
-      {
-        if($^O eq 'MSWin32')
-        {
-          next unless $file =~ /^libarchive-[0-9]+\.dll$/i;
-        }
-        elsif($^O eq 'cygwin')
-        {
-          next unless $file =~ /^cygarchive-[0-9]+\.dll$/i;
-        }
-        else
-        {
-          next unless $file =~ /^libarchive\.(dylib|so(\.[0-9]+)*)$/;
-        }
-        my($v,$d) = splitpath $dir, 1;
-        $build->{dll_dir} = [splitdir $d];
-        $build->{prefix}  = $v;
-        $build->{dlls}    = [$file];
-        closedir $dh;
-        last found_dll;
-      }
-      closedir $dh;
-    }
-  }
-  
-  $build->test_compile_run || die $build->error if $options{test} =~ /^(compile|both)$/;
-  $build->test_ffi || die $build->error if $options{test} =~ /^(ffi|both)$/;
-  $build;
-}
-
 
 sub _try_pkg_config
 {
@@ -261,6 +166,7 @@ register_hook post_install => sub {
 };
 
 
+
 1;
 
 __END__
@@ -275,7 +181,7 @@ Alien::Libarchive::Installer - Installer for libarchive
 
 =head1 VERSION
 
-version 0.08_05
+version 0.08_06
 
 =head1 SYNOPSIS
 
@@ -290,8 +196,8 @@ Build.PL
  my $installer = eval { Alien::Libarchive::Installer->system_install };
  if($installer)
  {
-   $build_args{extra_compiler_flags} = $installer->cflags,
-   $build_args{extra_linker_flags}   = $installer->libs,
+   $build_args{extra_compiler_flags} = $installer->cflags;
+   $build_args{extra_linker_flags}   = $installer->libs;
  }
  
  my $build = Module::Build->new(%build_args);

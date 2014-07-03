@@ -5,7 +5,7 @@ use warnings;
 use Alien::Install::Util;
 
 # ABSTRACT: Installer for bz2
-our $VERSION = '0.08_05'; # VERSION
+our $VERSION = '0.08_06'; # VERSION
 
 
 sub versions_available
@@ -392,7 +392,7 @@ Alien::bz2::Installer - Installer for bz2
 
 =head1 VERSION
 
-version 0.08_05
+version 0.08_06
 
 =head1 SYNOPSIS
 
@@ -407,8 +407,8 @@ Build.PL
  my $installer = eval { Alien::bz2::Installer->system_install };
  if($installer)
  {
-   $build_args{extra_compiler_flags} = $installer->cflags,
-   $build_args{extra_linker_flags}   = $installer->libs,
+   $build_args{extra_compiler_flags} = $installer->cflags;
+   $build_args{extra_linker_flags}   = $installer->libs;
  }
  
  my $build = Module::Build->new(%build_args);

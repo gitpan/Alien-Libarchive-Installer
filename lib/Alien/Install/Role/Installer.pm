@@ -6,7 +6,7 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Role for Alien::Install
-our $VERSION = '0.08_05'; # VERSION
+our $VERSION = '0.08_06'; # VERSION
 
 requires 'versions';
 requires 'fetch';
@@ -14,7 +14,7 @@ requires 'extract';
 requires 'chdir_source';
 requires 'test_compile_run';
 requires 'test_ffi';
-requires '_config_name';
+requires 'alien_config_name';
 
 my $build_requires = \%Alien::Install::Util::build_requires;
 
@@ -131,7 +131,7 @@ sub dlls
 {
   my($self, $prefix) = @_;
   
-  my $name = $self->_config_name;
+  my $name = $self->alien_config_name;
   $prefix = $self->{prefix} unless defined $prefix;
   
   unless(defined $self->{dlls} && defined $self->{dll_dir})
@@ -152,7 +152,7 @@ sub dlls
       require DynaLoader;
       $self->{libs} = [] unless defined $self->{libs};
       $self->{libs} = [ $self->{libs} ] unless ref $self->{libs};
-      my $path = DynaLoader::dl_findfile(grep /^-l/, @{ $self->libs });
+      my $path = DynaLoader::dl_findfile(@{ $self->libs });
       die "unable to find dynamic library" unless defined $path;
       my($vol, $dirs, $file) = splitpath $path;
       if($^O eq 'openbsd')
@@ -175,6 +175,125 @@ sub dlls
   map { catfile $prefix, @{ $self->{dll_dir} }, $_  } @{ $self->{dlls} };
 }
 
+sub system_install
+{
+  my($class, %options) = @_;
+
+  $options{alien} = 1 unless defined $options{alien};
+  $options{test} ||= 'compile';
+  die "test must be one of compile, ffi or both"
+    unless $options{test} =~ /^(compile|ffi|both)$/;
+
+  my $name = $class->alien_config_name;
+    
+  if($options{alien})
+  {
+    my $alien_class;
+    if($class->can('alien_config_alien_class'))
+    {
+      $alien_class = $class->alien_config_alien_class;
+    }
+    else
+    {
+      $alien_class = $class;
+      $alien_class =~ s/::Installer$//;
+    }
+    
+    my $try = "use $alien_class";
+    $try .= " " . $class->alien_config_alien_version
+      if $class->can('alien_config_alien_version');
+    $try .= "; 1";
+    
+    if(eval $try)
+    {
+      my $alien = $alien_class->new;
+      my $dir;
+      my(@dlls) = map { 
+        my($v,$d,$f) = splitpath $_; 
+        $dir = [$v,splitdir $d]; 
+        $f;
+      } $alien->dlls;
+    
+      my $build = bless {
+        cflags  => [$alien->cflags],
+        libs    => [$alien->libs],
+        dll_dir => $dir,
+        dlls    => \@dlls,
+        prefix  => rootdir,
+      }, $class;
+      eval {
+        $build->test_compile_run || die $build->error if $options{test} =~ /^(compile|both)$/;
+        $build->test_ffi || die $build->error if $options{test} =~ /^(ffi|both)$/;
+      };
+      return $build unless $@;
+    }
+  }
+  
+  my %build = (
+    cflags => [],
+    libs   => [ "-l$name" ],
+  );
+  
+  $class->call_hooks('system_install_flags_guess', \%build);
+  
+  my $build = bless \%build, $class;
+  
+  if($options{test} =~ /^(ffi|both)$/)
+  {
+    my @dir_search_list;
+    
+    $class->call_hooks('system_install_search_list', \@dir_search_list);
+    
+    if($^O eq 'MSWin32')
+    {
+      # On MSWin32 the entire path is not included in dl_library_path
+      # buth that is the most likely place that we will find dlls.
+      @dir_search_list = grep { -d $_ } split /;/, $ENV{PATH};
+    }
+    else
+    {
+      require DynaLoader;
+      @dir_search_list = grep { -d $_ } @DynaLoader::dl_library_path
+    }
+    
+    found_dll: foreach my $dir (@dir_search_list)
+    {
+      my $dh;
+      opendir($dh, $dir) || next;
+      # sort by filename length so that libarchive.so.12.0.4
+      # is preferred over libarchive.so.12 or libarchive.so
+      # if only to make diagnostics point to the more specific
+      # version.
+      foreach my $file (sort { length $b <=> length $a } readdir $dh)
+      {
+        if($^O eq 'MSWin32')
+        {
+          next unless $file =~ /^lib$name-[0-9]+\.dll$/i;
+        }
+        elsif($^O eq 'cygwin')
+        {
+          next unless $file =~ /^cyg$name-[0-9]+\.dll$/i;
+        }
+        else
+        {
+          next unless $file =~ /^lib$name\.(dylib|so(\.[0-9]+)*)$/;
+        }
+        my($v,$d) = splitpath $dir, 1;
+        $build->{dll_dir} = [splitdir $d];
+        $build->{prefix}  = $v;
+        $build->{dlls}    = [$file];
+        closedir $dh;
+        last found_dll;
+      }
+      closedir $dh;
+    }
+  }
+  
+  $build->test_compile_run || die $build->error if $options{test} =~ /^(compile|both)$/;
+  $build->test_ffi || die $build->error if $options{test} =~ /^(ffi|both)$/;
+  $build;
+}
+
 1;
 
 __END__
@@ -189,7 +308,7 @@ Alien::Install::Role::Installer - Role for Alien::Install
 
 =head1 VERSION
 
-version 0.08_05
+version 0.08_06
 
 =head1 AUTHOR
 

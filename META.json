@@ -26,6 +26,7 @@
       },
       "runtime" : {
          "requires" : {
+            "Class::Method::Modifiers" : "0",
             "ExtUtils::CBuilder" : "0",
             "Role::Tiny" : "1.003001",
             "base" : "0",
@@ -50,6 +51,6 @@
          "web" : "https://github.com/plicease/Alien-Libarchive-Installer"
       }
    },
-   "version" : "0.08_05"
+   "version" : "0.08_06"
 }
 
