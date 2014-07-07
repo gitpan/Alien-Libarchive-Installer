@@ -6,7 +6,7 @@ use Role::Tiny::With;
 use Alien::Install::Util;
 
 # ABSTRACT: Example installer for libfoo
-our $VERSION = '0.08_06'; # VERSION
+our $VERSION = '0.08_07'; # VERSION
 
 
 config
@@ -82,7 +82,7 @@ Alien::Install::Example::Libfoo::Installer - Example installer for libfoo
 
 =head1 VERSION
 
-version 0.08_06
+version 0.08_07
 
 =head1 SYNOPSIS
 

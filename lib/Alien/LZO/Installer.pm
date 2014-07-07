@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Installer for LZO
-our $VERSION = '0.08_06'; # VERSION
+our $VERSION = '0.08_07'; # VERSION
 
 sub _catfile {
   my $path = File::Spec->catfile(@_);
@@ -309,7 +309,7 @@ sub dlls
     {
       # /usr/bin/cyglzo2-2.dll
       opendir my $dh, '/usr/bin';
-      $self->{dlls} = [grep /^lzo2-[0-9]+.dll$/i, readdir $dh];
+      $self->{dlls} = [grep /^cyglzo2-[0-9]+.dll$/i, readdir $dh];
       $self->{dll_dir} = [];
       $prefix = '/usr/bin';
       closedir $dh;
@@ -479,7 +479,7 @@ Alien::LZO::Installer - Installer for LZO
 
 =head1 VERSION
 
-version 0.08_06
+version 0.08_07
 
 =head1 SYNOPSIS
 

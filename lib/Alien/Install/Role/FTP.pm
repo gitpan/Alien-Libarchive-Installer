@@ -7,7 +7,7 @@ use Alien::Install::Util;
 use Carp qw( croak );
 
 # ABSTRACT: Installer role for downloading via FTP
-our $VERSION = '0.08_06'; # VERSION
+our $VERSION = '0.08_07'; # VERSION
 
 requires 'alien_config_ftp';
 requires 'alien_config_name';
@@ -91,7 +91,7 @@ Alien::Install::Role::FTP - Installer role for downloading via FTP
 
 =head1 VERSION
 
-version 0.08_06
+version 0.08_07
 
 =head1 AUTHOR
 

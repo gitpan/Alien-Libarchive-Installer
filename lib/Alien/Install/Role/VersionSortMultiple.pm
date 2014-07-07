@@ -5,7 +5,7 @@ use warnings;
 use Role::Tiny;
 
 # ABSTRACT: Sort versions that are a multiple integers separated by dot
-our $VERSION = '0.08_06'; # VERSION
+our $VERSION = '0.08_07'; # VERSION
 
 my $cmp = sub {
   my @a = @{$_[0]};
@@ -44,7 +44,7 @@ Alien::Install::Role::VersionSortMultiple - Sort versions that are a multiple in
 
 =head1 VERSION
 
-version 0.08_06
+version 0.08_07
 
 =head1 AUTHOR
 

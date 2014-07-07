@@ -5,7 +5,7 @@ use warnings;
 use Role::Tiny;
 
 # ABSTRACT: Sort versions that are a simple floating point value
-our $VERSION = '0.08_06'; # VERSION
+our $VERSION = '0.08_07'; # VERSION
 
 around versions => sub {
   my $orig  = shift;
@@ -28,7 +28,7 @@ Alien::Install::Role::VersionSortSimple - Sort versions that are a simple floati
 
 =head1 VERSION
 
-version 0.08_06
+version 0.08_07
 
 =head1 AUTHOR
 

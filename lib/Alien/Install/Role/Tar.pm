@@ -6,7 +6,7 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Alien::Install role to extract from tar files
-our $VERSION = '0.08_06'; # VERSION
+our $VERSION = '0.08_07'; # VERSION
 
 sub extract
 {
@@ -59,7 +59,7 @@ Alien::Install::Role::Tar - Alien::Install role to extract from tar files
 
 =head1 VERSION
 
-version 0.08_06
+version 0.08_07
 
 =head1 AUTHOR
 

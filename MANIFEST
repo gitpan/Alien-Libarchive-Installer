@@ -54,6 +54,13 @@ t/libarchive/test_compile_run.t
 t/libarchive/test_ffi.t
 t/libarchive/versions.t
 t/libffi/01_use.t
+t/libffi/build_install.t
+t/libffi/build_requires.t
+t/libffi/fetch.t
+t/libffi/system_install.t
+t/libffi/system_requires.t
+t/libffi/test_compile_run.t
+t/libffi/test_ffi.t
 t/libffi/versions.t
 t/libfoo/01_use.t
 t/libfoo/build_install.t

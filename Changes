@@ -1,5 +1,9 @@
 Revision history for Alien-Libarchive-Installer
 
+0.08_07   2014-07-07 14:51:39 -0400
+  - completed implementation for Alien::Libffi::Installer
+  - cygwin fixes
+
 0.08_06   2014-07-03 07:52:50 -0400
   - generic implementation for system_install function
   - added Alien::Install::Role::FTP

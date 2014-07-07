@@ -6,7 +6,7 @@ use Role::Tiny;
 use Alien::Install::Util;
 
 # ABSTRACT: Role for Alien::Install
-our $VERSION = '0.08_06'; # VERSION
+our $VERSION = '0.08_07'; # VERSION
 
 requires 'versions';
 requires 'fetch';
@@ -142,6 +142,8 @@ sub dlls
     {
       # /usr/bin/cyg<name>-0.dll
       opendir my $dh, '/usr/bin';
+      # the version part of this regex will almost certainly
+      # need to be expanded.
       $self->{dlls} = [grep /^cyg$name-[0-9]+.dll$/i, readdir $dh];
       $self->{dll_dir} = [];
       $prefix = '/usr/bin';
@@ -308,7 +310,7 @@ Alien::Install::Role::Installer - Role for Alien::Install
 
 =head1 VERSION
 
-version 0.08_06
+version 0.08_07
 
 =head1 AUTHOR
 

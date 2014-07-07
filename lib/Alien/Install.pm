@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Install your aliens
-our $VERSION = '0.08_06'; # VERSION
+our $VERSION = '0.08_07'; # VERSION
 
 
 1;
@@ -21,7 +21,7 @@ Alien::Install - Install your aliens
 
 =head1 VERSION
 
-version 0.08_06
+version 0.08_07
 
 =head1 DESCRIPTION
 
