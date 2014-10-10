@@ -2,87 +2,193 @@ package Alien::Libarchive::Installer;
 
 use strict;
 use warnings;
-use Role::Tiny::With;
-use Alien::Install::Util;
-use Carp qw( carp );
 
 # ABSTRACT: Installer for libarchive
-our $VERSION = '0.08_07'; # VERSION
+our $VERSION = '0.09'; # VERSION
 
-config
-  name             => 'archive',
-  versions_url     => 'http://www.libarchive.org/downloads/',
-  versions_process => sub {
-    my($content) = @_;
-    my @versions;
-    push @versions, "$1.$2.$3" while $content =~ /libarchive-([1-9][0-9]*)\.([0-9]+)\.([0-9]+)\.tar.gz/g;
-    @versions;
-  },
-  fetch_url        => sub {
-    my(undef, $version) = @_;
-    "http://www.libarchive.org/downloads/libarchive-$version.tar.gz";
-  },
-  test_compile_run_program => join ("\n",
-    "#include <archive.h>",
-    "#include <archive_entry.h>",
-    "#include <stdio.h>",
-    "int",
-    "main(int argc, char *argv[])",
-    "{",
-    "  printf(\"version = '%s'\\n\", archive_version_string());",
-    "  return 0;",
-    "}",
-    "",
-  ),
-  test_compile_run_match => qr{version = 'libarchive (.*?)'},
-  test_ffi_signature     => [ 'archive_version_number', 'int' ],
-  test_ffi_version       => sub {
-    my(undef, $function) = @_;
-    return join '.', map { int } $1, $2, $3 if $function->() =~ /^([0-9]+)([0-9]{3})([0-9]{3})/;
-    return;
-  },
-  alien_version => '0.21',
-  system_install_flags_guess => sub {
-    my(undef, $build) = @_;
-    $build->{cflags} = _try_pkg_config(undef, 'cflags', '', '');
-    $build->{libs}   = _try_pkg_config(undef, 'libs',   '-larchive', '');
-  },
-;
 
-register_hook 'pre_instantiate' => sub {
-  my($class, $flags) = @_;
-  my $pkg_config_dir = catdir $flags->{prefix}, 'lib', 'pkgconfig';
-  push @{ $flags->{cflags} }, @{ _try_pkg_config($pkg_config_dir, 'cflags', '', '--static') };
-  push @{ $flags->{cflags} }, '-DLIBARCHIVE_STATIC' if $^O =~ /^(cygwin|MSWin32)$/;
-  push @{ $flags->{libs} }, @{ _try_pkg_config($pkg_config_dir, 'libs',   '-larchive', '--static') };
-};
-
-if($^O eq 'MSWin32' && do { require Config; $Config::Config{cc} =~ /cl(\.exe)?$/i })
+sub versions_available
 {
-  with qw(
-    Alien::Install::Role::Installer
-    Alien::Install::Role::HTTP
-    Alien::Install::Role::Tar 
-    Alien::Install::Role::CMake
-    Alien::Install::Role::TestCompileRun
-    Alien::Install::Role::TestFFI
-    Alien::Install::Role::VersionSortMultiple
-  );
+  require HTTP::Tiny;
+  my $url = "http://www.libarchive.org/downloads/";
+  my $response = HTTP::Tiny->new->get($url);
+  
+  die sprintf("%s %s %s", $response->{status}, $response->{reason}, $url)
+    unless $response->{success};
+
+  my @versions;
+  push @versions, [$1,$2,$3] while $response->{content} =~ /libarchive-([1-9][0-9]*)\.([0-9]+)\.([0-9]+)\.tar.gz/g;
+  @versions = map { join '.', @$_ } sort { $a->[0] <=> $b->[0] || $a->[1] <=> $b->[1] || $a->[2] <=> $b->[2] } @versions;
 }
-else
+
+
+sub fetch
 {
-  with qw(
-    Alien::Install::Role::Installer
-    Alien::Install::Role::HTTP
-    Alien::Install::Role::Tar 
-    Alien::Install::Role::Autoconf
-    Alien::Install::Role::TestCompileRun
-    Alien::Install::Role::TestFFI
-    Alien::Install::Role::VersionSortMultiple
+  my($class, %options) = @_;
+  
+  my $dir = $options{dir} || eval { require File::Temp; File::Temp::tempdir( CLEANUP => 1 ) };
+
+  require HTTP::Tiny;  
+  my $version = $options{version} || do {
+    my @versions = $class->versions_available;
+    die "unable to determine latest version from listing"
+      unless @versions > 0;
+    $versions[-1];
+  };
+
+  if(defined $ENV{ALIEN_LIBARCHIVE_INSTALL_MIRROR})
+  {
+    my $fn = File::Spec->catfile($ENV{ALIEN_LIBARCHIVE_INSTALL_MIRROR}, "libarchive-$version.tar.gz");
+    return wantarray ? ($fn, $version) : $fn;
+  }
+
+  my $url = "http://www.libarchive.org/downloads/libarchive-$version.tar.gz";
+  
+  my $response = HTTP::Tiny->new->get($url);
+  
+  die sprintf("%s %s %s", $response->{status}, $response->{reason}, $url)
+    unless $response->{success};
+  
+  require File::Spec;
+  
+  my $fn = File::Spec->catfile($dir, "libarchive-$version.tar.gz");
+  
+  open my $fh, '>', $fn;
+  binmode $fh;
+  print $fh $response->{content};
+  close $fh;
+  
+  wantarray ? ($fn, $version) : $fn;
+}
+
+
+sub build_requires
+{
+  my %prereqs = (
+    'HTTP::Tiny'   => 0,
+    'Archive::Tar' => 0,
   );
   
-  register_build_requires 'PkgConfig'   => '0.07620' if $^O eq 'MSWin32';
+  if($^O eq 'MSWin32')
+  {
+    require Config;
+    if($Config::Config{cc} =~ /cl(\.exe)?$/i)
+    {
+      $prereqs{'Alien::CMake'} = '0.05';
+    }
+    else
+    {
+      $prereqs{'Alien::MSYS'} = '0.07';
+      $prereqs{'PkgConfig'}   = '0.07620';
+    }
+  }
+  
+  \%prereqs;
 }
+
+
+sub system_requires
+{
+  my %prereqs = ();
+  \%prereqs;
+}
+
+
+sub system_install
+{
+  my($class, %options) = @_;
+
+  $options{alien} = 1 unless defined $options{alien};
+  $options{test} ||= 'compile';
+  die "test must be one of compile, ffi or both"
+    unless $options{test} =~ /^(compile|ffi|both)$/;
+
+  if($options{alien} && eval q{ use Alien::Libarchive 0.21; 1 })
+  {
+    my $alien = Alien::Libarchive->new;
+    
+    require File::Spec;
+    my $dir;
+    my(@dlls) = map { 
+      my($v,$d,$f) = File::Spec->splitpath($_); 
+      $dir = [$v,File::Spec->splitdir($d)]; 
+      $f;
+    } $alien->dlls;
+    
+    my $build = bless {
+      cflags  => [$alien->cflags],
+      libs    => [$alien->libs],
+      dll_dir => $dir,
+      dlls    => \@dlls,
+      prefix  => File::Spec->rootdir,
+    }, $class;
+    eval {
+      $build->test_compile_run || die $build->error if $options{test} =~ /^(compile|both)$/;
+      $build->test_ffi || die $build->error if $options{test} =~ /^(ffi|both)$/;
+    };
+    return $build unless $@;
+  }
+  
+  my $build = bless {
+    cflags => _try_pkg_config(undef, 'cflags', '', ''),
+    libs   => _try_pkg_config(undef, 'libs',   '-larchive', ''),
+  }, $class;
+  
+  if($options{test} =~ /^(ffi|both)$/)
+  {
+    my @dir_search_list;
+    
+    if($^O eq 'MSWin32')
+    {
+      # On MSWin32 the entire path is not included in dl_library_path
+      # buth that is the most likely place that we will find dlls.
+      @dir_search_list = grep { -d $_ } split /;/, $ENV{PATH};
+    }
+    else
+    {
+      require DynaLoader;
+      @dir_search_list = grep { -d $_ } @DynaLoader::dl_library_path
+    }
+    
+    found_dll: foreach my $dir (@dir_search_list)
+    {
+      my $dh;
+      opendir($dh, $dir) || next;
+      # sort by filename length so that libarchive.so.12.0.4
+      # is preferred over libarchive.so.12 or libarchive.so
+      # if only to make diagnostics point to the more specific
+      # version.
+      foreach my $file (sort { length $b <=> length $a } readdir $dh)
+      {
+        if($^O eq 'MSWin32')
+        {
+          next unless $file =~ /^libarchive-[0-9]+\.dll$/i;
+        }
+        elsif($^O eq 'cygwin')
+        {
+          next unless $file =~ /^cygarchive-[0-9]+\.dll$/i;
+        }
+        else
+        {
+          next unless $file =~ /^libarchive\.(dylib|so(\.[0-9]+)*)$/;
+        }
+        require File::Spec;
+        my($v,$d) = File::Spec->splitpath($dir, 1);
+        $build->{dll_dir} = [File::Spec->splitdir($d)];
+        $build->{prefix}  = $v;
+        $build->{dlls}    = [$file];
+        closedir $dh;
+        last found_dll;
+      }
+      closedir $dh;
+    }
+  }
+  
+  $build->test_compile_run || die $build->error if $options{test} =~ /^(compile|both)$/;
+  $build->test_ffi || die $build->error if $options{test} =~ /^(ffi|both)$/;
+  $build;
+}
+
 
 sub _try_pkg_config
 {
@@ -116,56 +222,362 @@ sub _try_pkg_config
   [Text::ParseWords::shellwords($value)];
 }
 
-register_hook post_install => sub {
-  my($class, $prefix) = @_;
-
-  my $pkg_config_dir = catdir $prefix, 'lib', 'pkgconfig';
-  my $pcfile = catfile $pkg_config_dir, 'libarchive.pc';
-    
-  my @content;
+sub _msys
+{
+  my($sub) = @_;
   require Config;
-  if($Config::Config{cc} !~ /cl(\.exe)?$/i)
+  if($^O eq 'MSWin32')
   {
-    open my $fh, '<', $pcfile;
-    @content = map { s{$prefix}{'${pcfiledir}/../..'}eg; $_ } do { <$fh> };
+    if($Config::Config{cc} !~ /cl(\.exe)?$/i)
+    {
+      require Alien::MSYS;
+      return Alien::MSYS::msys(sub{ $sub->('make') });
+    }
+  }
+  $sub->($Config::Config{make});
+}
+
+sub build_install
+{
+  my($class, $prefix, %options) = @_;
+  
+  $options{test} ||= 'compile';
+  die "test must be one of compile, ffi or both"
+    unless $options{test} =~ /^(compile|ffi|both)$/;
+  die "need an install prefix" unless $prefix;
+  
+  $prefix =~ s{\\}{/}g;
+  
+  my $dir = $options{dir} || do { require File::Temp; File::Temp::tempdir( CLEANUP => 1 ) };
+  
+  require Archive::Tar;
+  my $tar = Archive::Tar->new;
+  $tar->read($options{tar} || $class->fetch);
+  
+  require Cwd;
+  my $save = Cwd::getcwd();
+  
+  chdir $dir;  
+  my $build = eval {
+  
+    $tar->extract;
+
+    chdir do {
+      opendir my $dh, '.';
+      my(@list) = grep !/^\./,readdir $dh;
+      close $dh;
+      die "unable to find source in build root" if @list == 0;
+      die "confused by multiple entries in the build root" if @list > 1;
+      $list[0];
+    };
+  
+    _msys(sub {
+      my($make) = @_;
+      require Config;
+      if($Config::Config{cc} !~ /cl(\.exe)?$/i)
+      {
+        system 'sh', 'configure', "--prefix=$prefix", '--with-pic';
+        die "configure failed" if $?;
+      }
+      else
+      {
+        require Alien::CMake;
+        my $cmake = Alien::CMake->config('prefix') . '/bin/cmake.exe';
+        my $system = $make =~ /nmake(\.exe)?$/ ? 'NMake Makefiles' : 'MinGW Makefiles';
+        system $cmake,
+          -G => $system,
+          "-DCMAKE_MAKE_PROGRAM:PATH=$make",
+          "-DCMAKE_INSTALL_PREFIX:PATH=$prefix",
+          "-DENABLE_TEST=OFF",
+          ".";
+        die "cmake failed" if $?;
+      }
+      system $make, 'all';
+      die "make all failed" if $?;
+      system $make, 'install';
+      die "make install failed" if $?;
+    });
+
+    require File::Spec;
+
+    foreach my $name ($^O =~ /^(MSWin32|cygwin)$/ ? ('bin','lib') : ('lib'))
+    {
+      do {
+        my $static_dir = File::Spec->catdir($prefix, $name);
+        my $dll_dir    = File::Spec->catdir($prefix, 'dll');
+        require File::Path;
+        File::Path::mkpath($dll_dir, 0, 0755);
+        my $dh;
+        opendir $dh, $static_dir;
+        my @list = readdir $dh;
+        @list = grep { /\.so/ || /\.(dylib|la|dll|dll\.a)$/ } grep !/^\./, @list;
+        closedir $dh;
+        foreach my $basename (@list)
+        {
+          my $from = File::Spec->catfile($static_dir, $basename);
+          my $to   = File::Spec->catfile($dll_dir,    $basename);
+          if(-l $from)
+          {
+            symlink(readlink $from, $to);
+            unlink($from);
+          }
+          else
+          {
+            require File::Copy;
+            File::Copy::move($from, $to);
+          }
+        }
+      };
+    }
+
+    my $pkg_config_dir = File::Spec->catdir($prefix, 'lib', 'pkgconfig');
+    
+    my $pcfile = File::Spec->catfile($pkg_config_dir, 'libarchive.pc');
+    
+    do {
+      my @content;
+      if($Config::Config{cc} !~ /cl(\.exe)?$/i)
+      {
+        open my $fh, '<', $pcfile;
+        @content = map { s{$prefix}{'${pcfiledir}/../..'}eg; $_ } do { <$fh> };
+        close $fh;
+      }
+      else
+      {
+        # TODO: later when we know the version with more
+        # certainty, we can update this file with the
+        # Version
+        @content = join "\n", "prefix=\${pcfiledir}/../..",
+                              "exec_prefix=\${prefix}",
+                              "libdir=\${exec_prefix}/lib",
+                              "includedir=\${prefix}/include",
+                              "Name: libarchive",
+                              "Description: library that can create and read several streaming archive formats",
+                              "Cflags: -I\${includedir}",
+                              "Libs: advapi32.lib \${libdir}/archive_static.lib",
+                              "Libs.private: ",
+                              "";
+        require File::Path;
+        File::Path::mkpath($pkg_config_dir, 0, 0755);
+      }
+      
+      my($version) = map { /^Version:\s*(.*)$/; $1 } grep /^Version: /, @content;
+      # older versions apparently didn't include the necessary -I and -L flags
+      if(defined $version && $version =~ /^[12]\./)
+      {
+        for(@content)
+        {
+          s/^Libs: /Libs: -L\${libdir} /;
+        }
+        push @content, "Cflags: -I\${includedir}\n";
+      }
+      
+      open my $fh, '>', $pcfile;
+      print $fh @content;
+      close $fh;
+    };
+    
+    my $build = bless {
+      cflags  => _try_pkg_config($pkg_config_dir, 'cflags', '-I' . File::Spec->catdir($prefix, 'include'), '--static'),
+      libs    => _try_pkg_config($pkg_config_dir, 'libs',   '-L' . File::Spec->catdir($prefix, 'lib'),     '--static'),
+      prefix  => $prefix,
+      dll_dir => [ 'dll' ],
+      dlls    => do {
+        opendir(my $dh, File::Spec->catdir($prefix, 'dll'));
+        [grep { ! -l File::Spec->catfile($prefix, 'dll', $_) } grep { /\.so/ || /\.(dll|dylib)$/ } grep !/^\./, readdir $dh];
+      },
+    }, $class;
+    
+    if($^O eq 'cygwin' || $^O eq 'MSWin32')
+    {
+      # TODO: should this go in the munged pc file?
+      unshift @{ $build->{cflags} }, '-DLIBARCHIVE_STATIC';
+    }
+
+    $build->test_compile_run || die $build->error if $options{test} =~ /^(compile|both)$/;
+    $build->test_ffi         || die $build->error if $options{test} =~ /^(ffi|both)$/;
+    $build;
+  };
+  
+  my $error = $@;
+  chdir $save;
+  die $error if $error;
+  $build;
+}
+
+
+sub cflags  { shift->{cflags}  }
+sub libs    { shift->{libs}    }
+sub version { shift->{version} }
+
+sub dlls
+{
+  my($self, $prefix) = @_;
+  
+  $prefix = $self->{prefix} unless defined $prefix;
+  
+  unless(defined $self->{dlls} && defined $self->{dll_dir})
+  {
+    # Question: is this necessary in light of the better
+    # dll detection now done in system_install ?
+    if($^O eq 'cygwin')
+    {
+      # /usr/bin/cygarchive-13.dll
+      opendir my $dh, '/usr/bin';
+      $self->{dlls} = [grep /^cygarchive-[0-9]+.dll$/i, readdir $dh];
+      $self->{dll_dir} = [];
+      $prefix = '/usr/bin';
+      closedir $dh;
+    }
+    else
+    {
+      require DynaLoader;
+      $self->{libs} = [] unless defined $self->{libs};
+      $self->{libs} = [ $self->{libs} ] unless ref $self->{libs};
+      my $path = DynaLoader::dl_findfile(grep /^-l/, @{ $self->libs });
+      die "unable to find dynamic library" unless defined $path;
+      require File::Spec;
+      my($vol, $dirs, $file) = File::Spec->splitpath($path);
+      if($^O eq 'openbsd')
+      {
+        # on openbsd we get the .a file back, so have to scan
+        # for .so.#.# as there is no .so symlink
+        opendir(my $dh, $dirs);
+        $self->{dlls} = [grep /^libarchive.so/, readdir $dh];
+        closedir $dh;
+      }
+      else
+      {
+        $self->{dlls} = [ $file ];
+      }
+      $self->{dll_dir} = [];
+      $self->{prefix} = $prefix = File::Spec->catpath($vol, $dirs);
+    }
+  }
+  
+  require File::Spec;
+  map { File::Spec->catfile($prefix, @{ $self->{dll_dir} }, $_ ) } @{ $self->{dlls} };
+}
+
+
+sub test_compile_run
+{
+  my($self, %opt) = @_;
+  delete $self->{error};
+  $self->{quiet} = 1 unless defined $self->{quiet};
+  my $cbuilder = $opt{cbuilder} || do { require ExtUtils::CBuilder; ExtUtils::CBuilder->new(quiet => $self->{quiet}) };
+  
+  unless($cbuilder->have_compiler)
+  {
+    $self->{error} = 'no compiler';
+    return;
+  }
+  
+  require File::Spec;
+  my $dir = $opt{dir} || do { require File::Temp; File::Temp::tempdir( CLEANUP => 1 ) };
+  my $fn = File::Spec->catfile($dir, 'test.c');
+  do {
+    open my $fh, '>', $fn;
+    print $fh "#include <archive.h>\n",
+              "#include <archive_entry.h>\n",
+              "#include <stdio.h>\n",
+              "int\n",
+              "main(int argc, char *argv[])\n",
+              "{\n",
+              "  printf(\"version = '%d'\\n\", archive_version_number());\n",
+              "  return 0;\n",
+              "}\n";
     close $fh;
+  };
+  
+  my $test_object = eval {
+    $cbuilder->compile(
+      source               => $fn,
+      extra_compiler_flags => $self->{cflags} || [],
+    );
+  };
+  
+  if(my $error = $@)
+  {
+    $self->{error} = $error;
+    return;
+  }
+  
+  my $test_exe = eval {
+    $cbuilder->link_executable(
+      objects            => $test_object,
+      extra_linker_flags => $self->{libs} || [],
+    );
+  };
+  
+  if(my $error = $@)
+  {
+    $self->{error} = $error;
+    return;
+  }
+  
+  if($test_exe =~ /\s/)
+  {
+    $test_exe = Win32::GetShortPathName($test_exe) if $^O eq 'MSWin32';
+    $test_exe = Cygwin::win_to_posix_path(Win32::GetShortPathName(Cygwin::posix_to_win_path($test_exe))) if $^O eq 'cygwin';
+  }
+  
+  my $output = `$test_exe`;
+  
+  if($? == -1)
+  {
+    $self->{error} = "failed to execute $!";
+    return;
+  }
+  elsif($? & 127)
+  {
+    $self->{error} = "child died with siganl " . ($? & 127);
+    return;
+  }
+  elsif($?)
+  {
+    $self->{error} = "child exited with value " . ($? >> 8);
+    return;
+  }
+  
+  if($output =~ /version = '([0-9]+)([0-9]{3})([0-9]{3})'/)
+  {
+    return $self->{version} = join '.', map { int } $1, $2, $3;
   }
   else
   {
-    # TODO: later when we know the version with more
-    # certainty, we can update this file with the
-    # Version
-    @content = join "\n", "prefix=\${pcfiledir}/../..",
-                          "exec_prefix=\${prefix}",
-                          "libdir=\${exec_prefix}/lib",
-                          "includedir=\${prefix}/include",
-                          "Name: libarchive",
-                          "Description: library that can create and read several streaming archive formats",
-                          "Cflags: -I\${includedir}",
-                          "Libs: advapi32.lib \${libdir}/archive_static.lib",
-                          "Libs.private: ",
-                          "";
-    require File::Path;
-    File::Path::mkpath($pkg_config_dir, 0, 0755);
+    $self->{error} = "unable to retrieve version from output";
+    return;
   }
-      
-  my($version) = map { /^Version:\s*(.*)$/; $1 } grep /^Version: /, @content;
-  # older versions apparently didn't include the necessary -I and -L flags
-  if(defined $version && $version =~ /^[12]\./)
+}
+
+
+sub test_ffi
+{
+  my($self) = @_;
+  require FFI::Raw;
+  delete $self->{error};
+
+  foreach my $dll ($self->dlls)
   {
-    for(@content)
+    my $archive_version_number = eval {
+      FFI::Raw->new(
+        $dll, 'archive_version_number',
+        FFI::Raw::int(),
+      );
+    };
+    next if $@;
+    if($archive_version_number->() =~ /^([0-9]+)([0-9]{3})([0-9]{3})/)
     {
-      s/^Libs: /Libs: -L\${libdir} /;
+      return $self->{version} = join '.', map { int } $1, $2, $3;
     }
-    push @content, "Cflags: -I\${includedir}\n";
   }
-      
-  open my $fh, '>', $pcfile;
-  print $fh @content;
-  close $fh;
-};
+  $self->{error} = 'could not find archive_version_number';
+  return; 
+}
 
 
+sub error { shift->{error} }
 
 1;
 
@@ -181,7 +593,7 @@ Alien::Libarchive::Installer - Installer for libarchive
 
 =head1 VERSION
 
-version 0.08_07
+version 0.09
 
 =head1 SYNOPSIS
 
@@ -196,8 +608,8 @@ Build.PL
  my $installer = eval { Alien::Libarchive::Installer->system_install };
  if($installer)
  {
-   $build_args{extra_compiler_flags} = $installer->cflags;
-   $build_args{extra_linker_flags}   = $installer->libs;
+   $build_args{extra_compiler_flags} = $installer->cflags,
+   $build_args{extra_linker_flags}   = $installer->libs,
  }
  
  my $build = Module::Build->new(%build_args);
@@ -241,10 +653,6 @@ FFI::Raw
 
 =head1 DESCRIPTION
 
-B<Note>: I am in the process of refactoring this into a more generic
-set of roles that can be used for other "installer" classes.  Until
-the refactoring process is complete it will be quite messy in here.
-
 This distribution contains the logic for finding existing libarchive
 installs, and building new ones.  If you do not care much about the
 version of libarchive that you use, and libarchive is not an optional
@@ -267,9 +675,9 @@ an instance of L<Alien::Libarchive::Installer> which can be
 queried to retrieve the settings needed to interact with 
 libarchive via XS or L<FFI::Raw>.
 
-=head2 versions
+=head2 versions_available
 
- my @versions = Alien::Libarchive::Installer->versions;
+ my @versions = Alien::Libarchive::Installer->versions_available;
  my $latest_version = $versions[-1];
 
 Return the list of versions of libarchive available on the Internet.
@@ -388,9 +796,9 @@ These options may be passed into build_install:
 
 =over 4
 
-=item archive
+=item tar
 
-Filename where the libarchive source tarball is located.
+Filename where the libarchive source tar is located.
 If not specified the latest version will be downloaded
 from the Internet.
 

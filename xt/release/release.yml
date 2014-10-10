@@ -11,30 +11,12 @@ pod_spelling_system:
     - DLL
     - dlls
     - ffi
-    - Autoconf
-    - CMake
-    - catdir
-    - catpath
-    - splitdir
-    - splitpath
-    - bz
-    - bzip
-    - oberhumer
-    - lzo
-    - refactoring
-    - libfoo
-    - alienize
-    - arounds
-    - reinstalling
-    - libffi
 
 pod_coverage:
   skip: 0
   # format is "Class#method" or "Class", regex allowed
   # for either Class or method.
-  private:
-    - Alien::Install::Role.*
-    - Alien::(Libarchive|bz2)::Installer#alien_config.*
+  private: []
 
 unused_vars:
   skip: 0

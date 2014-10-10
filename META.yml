@@ -3,25 +3,22 @@ abstract: 'Installer for libarchive'
 author:
   - 'Graham Ollis <plicease@cpan.org>'
 build_requires:
-  Module::Build: '0.3601'
+  Module::Build: '0.28'
   Test::More: '0.94'
 configure_requires:
-  Module::Build: '0.3601'
+  Module::Build: '0.28'
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 5.019, CPAN::Meta::Converter version 2.141520'
+generated_by: 'Dist::Zilla version 5.020, CPAN::Meta::Converter version 2.142690'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: '1.4'
 name: Alien-Libarchive-Installer
 requires:
-  Class::Method::Modifiers: '0'
   ExtUtils::CBuilder: '0'
-  Role::Tiny: '1.003001'
-  base: '0'
   perl: '5.006'
 resources:
   bugtracker: https://github.com/plicease/Alien-Libarchive-Installer/issues
   homepage: http://perl.wdlabs.com/Alien-Libarchive-Installer
   repository: git://github.com/plicease/Alien-Libarchive-Installer.git
-version: 0.08_07
+version: '0.09'

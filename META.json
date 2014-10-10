@@ -4,7 +4,7 @@
       "Graham Ollis <plicease@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.019, CPAN::Meta::Converter version 2.141520",
+   "generated_by" : "Dist::Zilla version 5.020, CPAN::Meta::Converter version 2.142690",
    "license" : [
       "perl_5"
    ],
@@ -16,20 +16,17 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "Module::Build" : "0.3601"
+            "Module::Build" : "0.28"
          }
       },
       "configure" : {
          "requires" : {
-            "Module::Build" : "0.3601"
+            "Module::Build" : "0.28"
          }
       },
       "runtime" : {
          "requires" : {
-            "Class::Method::Modifiers" : "0",
             "ExtUtils::CBuilder" : "0",
-            "Role::Tiny" : "1.003001",
-            "base" : "0",
             "perl" : "5.006"
          }
       },
@@ -39,7 +36,7 @@
          }
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/plicease/Alien-Libarchive-Installer/issues"
@@ -51,6 +48,6 @@
          "web" : "https://github.com/plicease/Alien-Libarchive-Installer"
       }
    },
-   "version" : "0.08_07"
+   "version" : "0.09"
 }
 

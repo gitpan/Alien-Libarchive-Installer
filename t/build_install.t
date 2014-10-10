@@ -7,7 +7,7 @@ use Config;
 
 BEGIN {
   plan skip_all => "set ALIEN_LIBARCHIVE_INSTALLER_EXTRA_TESTS to run test"
-    unless $ENV{TRAVIS_JOB_ID} || $ENV{ALIEN_LIBARCHIVE_INSTALLER_EXTRA_TESTS} || $ENV{ALIEN_INSTALL_EXTRA_TESTS};
+    unless $ENV{TRAVIS_JOB_ID} || $ENV{ALIEN_LIBARCHIVE_INSTALLER_EXTRA_TESTS};
   plan skip_all => "test requires HTTP::Tiny"
     unless eval q{ use HTTP::Tiny; 1 };
   plan skip_all => "test requires AnyEvent::Open3::Simple"
@@ -67,8 +67,8 @@ foreach my $version (qw( 3.1.2 3.0.4 2.8.4 ))
     plan skip_all => "not testing $version on cygwin"
       if $^O eq 'cygwin' && $version ne '2.8.4';
     plan tests => 5;
-    my $archive = Alien::Libarchive::Installer->fetch( version => $version );
-    my $installer = eval { Alien::Libarchive::Installer->build_install( File::Spec->catdir($prefix, $version), archive => $archive, test => $type ) };
+    my $tar = Alien::Libarchive::Installer->fetch( version => $version );
+    my $installer = eval { Alien::Libarchive::Installer->build_install( File::Spec->catdir($prefix, $version), tar => $tar, test => $type ) };
     is $@, '', 'no error';
     SKIP: {
       skip "can't test \$installer without a sucessful build", 4 if $@ ne '';

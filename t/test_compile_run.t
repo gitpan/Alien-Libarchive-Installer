@@ -10,7 +10,7 @@ BEGIN {
 }
 
 plan skip_all => 'requires libarchive already installed'
-  unless check_lib( lib => 'archive' );
+  unless check_lib( lib => 'archive', header => 'archive.h' );
 
 plan tests => 1;
 

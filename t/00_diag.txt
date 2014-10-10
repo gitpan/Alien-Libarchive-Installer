@@ -1,17 +1,3 @@
-Alien::CMake
-Alien::Libarchive
-Alien::MSYS
-Alien::bz2
-Archive::Ar
-Archive::Ar::Libarchive
-Archive::Tar
-Archive::Zip
-Class::Method::Modifiers
 ExtUtils::CBuilder
-FFI::Raw
-HTTP::Tiny
 Module::Build
-Net::FTP
-PkgConfig
-Role::Tiny
 Test::More
