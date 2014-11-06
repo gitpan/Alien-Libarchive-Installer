@@ -1,5 +1,8 @@
 Revision history for Alien-Libarchive-Installer
 
+0.10      2014-11-05 22:08:43 -0500
+  - reduce noisy diagnostics when pkg-config or PkgConfig.pm fails
+
 0.09      2014-10-10 08:26:40 -0400
   - Test for archive.h in addition to -larchive for tests
     Hopefully fixes regression on OS X

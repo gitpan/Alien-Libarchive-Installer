@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Installer for libarchive
-our $VERSION = '0.09'; # VERSION
+our $VERSION = '0.10'; # VERSION
 
 
 sub versions_available
@@ -207,13 +207,14 @@ sub _try_pkg_config
     # you probably think I am crazy...
     eval q{ use PkgConfig 0.07620 };
     die $@ if $@;
-    my $value = `$^X $INC{'PkgConfig.pm'} libarchive $extra --$field`;
+    my $value = `$^X $INC{'PkgConfig.pm'} --silence-errors libarchive $extra --$field`;
     die if $?;
     $value;
   };
 
   unless(defined $value) {
-    $value = `pkg-config libarchive $extra --$field`;
+    no warnings;
+    $value = `pkg-config --silence-errors libarchive $extra --$field`;
     return $guess if $?;
   }
   
@@ -593,7 +594,7 @@ Alien::Libarchive::Installer - Installer for libarchive
 
 =head1 VERSION
 
-version 0.09
+version 0.10
 
 =head1 SYNOPSIS
 

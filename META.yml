@@ -5,10 +5,12 @@ author:
 build_requires:
   Module::Build: '0.28'
   Test::More: '0.94'
+  perl: '5.006'
 configure_requires:
   Module::Build: '0.28'
+  perl: '5.006'
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 5.020, CPAN::Meta::Converter version 2.142690'
+generated_by: 'Dist::Zilla version 5.023, CPAN::Meta::Converter version 2.142690'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -21,4 +23,4 @@ resources:
   bugtracker: https://github.com/plicease/Alien-Libarchive-Installer/issues
   homepage: http://perl.wdlabs.com/Alien-Libarchive-Installer
   repository: git://github.com/plicease/Alien-Libarchive-Installer.git
-version: '0.09'
+version: '0.10'
